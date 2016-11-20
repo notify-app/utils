@@ -1,0 +1,11 @@
+{
+  "name": "notify-utils",
+  "version": "0.1.0",
+  "description": "Utilities used by Notify",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Luca Tabone <taboneluca3@gmail.com>",
+  "license": "ISC"
+}

@@ -1,0 +1,5 @@
+'use strict'
+
+module.exports = {
+  getCookieValue: require('./src/get-cookie-value')
+}
