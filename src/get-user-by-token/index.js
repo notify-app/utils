@@ -12,7 +12,7 @@ const validateToken = require('../validate-token')
  *                                 valid access token. Rejected otherwise.
  */
 module.exports = (notifyStore, token, maxAge) => {
-  let resolvedTokenPromise = (typeof token == 'string')
+  const resolvedTokenPromise = (typeof token == 'string')
     ? retrieveToken(notifyStore, token)
     : Promise.resolve(token)
 
