@@ -9,7 +9,7 @@
  */
 module.exports = (token, maxAge) => {
   const created = new Date(token.created)
-  let expire = new Date(token.created)  
+  let expire = new Date(token.created)
   expire.setSeconds(expire.getSeconds() + maxAge)
-  return (expire > created) ? Promise.resolve() : Promise.reject()
+  return (expire > created) ? Promise.resolve(token) : Promise.reject(token)
 }
