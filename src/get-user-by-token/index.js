@@ -4,13 +4,17 @@
  * getUserByToken retrieves the User info from the DB related to an access
  * token.
  * @param  {Object} notifyStore Notify Store instance being used.
- * @param  {String} token       Access Token.
- * @param  {Number} maxAge      The lifetime of an access token.
- * @return {Promise}            Resolved when a user is found linked to a valid
- *                              access token. Rejected otherwise.
+ * @param  {String|Object} token   Access Token.
+ * @param  {Number}        maxAge  The lifetime of an access token.
+ * @return {Promise}               Resolved when a user is found linked to a
+ *                                 valid access token. Rejected otherwise.
  */
 module.exports = (notifyStore, token, maxAge) => {
-  return retrieveToken(notifyStore, token)
+  let resolvedTokenPromise = (typeof token == 'string')
+    ? retrieveToken(notifyStore, token)
+    : Promise.resolve(token)
+
+  return resolvedTokenPromise
     .then(validateToken.bind(null, notifyStore, maxAge))
 }
 
