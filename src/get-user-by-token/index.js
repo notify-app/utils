@@ -5,19 +5,26 @@ const validateToken = require('../validate-token')
 /**
  * getUserByToken retrieves the User info from the DB related to an access
  * token.
- * @param  {Object} notifyStore    Notify Store instance being used.
- * @param  {String|Object} token   Access Token.
- * @param  {Number}        maxAge  The lifetime of an access token.
- * @return {Promise}               Resolved when a user is found linked to a
- *                                 valid access token. Rejected otherwise.
+ * @param  {String|Object} token        Access Token.
+ * @param  {Object} opts.notifyStore    Notify Store instance being used.
+ * @param  {Number} opts.maxAge         The lifetime of an access token.
+ * @param  {String} opts.origin         The origin of the request.
+ * @return {Promise}                    Resolved when a user is found linked to
+ *                                      a valid access token. Rejected
+ *                                      otherwise.
  */
-module.exports = (notifyStore, token, maxAge) => {
+module.exports = (token, { notifyStore, maxAge, origin }) => {
   const resolvedTokenPromise = (typeof token == 'string')
     ? retrieveToken(notifyStore, token)
     : Promise.resolve(token)
 
   return resolvedTokenPromise
-    .then(token => validateToken(token, maxAge))
+    .then(token => {
+      return validateToken(token, {
+        maxAge: maxAge,
+        origin: origin
+      })
+    })
     .then(token => handleValidToken(notifyStore, token))
     .catch(token => handleInvalidToken(notifyStore, token))
 }
