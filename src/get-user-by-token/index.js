@@ -14,7 +14,7 @@ const validateToken = require('../validate-token')
  *                                      otherwise.
  */
 module.exports = (token, { notifyStore, maxAge, origin }) => {
-  const resolvedTokenPromise = (typeof token == 'string')
+  const resolvedTokenPromise = (typeof token === 'string')
     ? retrieveToken(notifyStore, token)
     : Promise.resolve(token)
 

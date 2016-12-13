@@ -15,7 +15,7 @@ const getCookieValue = require('../get-cookie-value')
  */
 module.exports = (headers, { cookie, header }) => {
   return getCookieValue(headers.cookie, cookie)
-    .catch(err => {
+    .catch(() => {
       return parseHeader(headers, header)
     })
 }
