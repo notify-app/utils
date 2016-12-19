@@ -1,8 +1,13 @@
 'use strict'
 
+const validateToken = require('./src/validate-token')
+const getCookieValue = require('./src/get-cookie-value')
+const getUserByToken = require('./src/get-user-by-token')
+const getTokenFromRequest = require('./src/get-token-from-request')
+
 module.exports = {
-  getCookieValue: require('./src/get-cookie-value'),
-  getUserByToken: require('./src/get-user-by-token'),
-  validateToken: require('./src/validate-token'),
-  getTokenFromRequest: require('./src/get-token-from-request')
+  validateToken,
+  getCookieValue,
+  getUserByToken,
+  getTokenFromRequest
 }

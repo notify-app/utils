@@ -1,10 +1,12 @@
 'use strict'
 
-const validateToken = require('../validate-token')
-
 /**
- * getUserByToken retrieves the User info from the DB related to an access
- * token.
+ * getUserByToken returns the user associated with a token. This function can
+ * be invoked either with the token object itself or the token value (in which
+ * case it will first retrieve the token object from the db). If the provided
+ * token is not considered to valid, this function will return a rejected
+ * promise.
+ * @this   Utils
  * @param  {String|Object} token        Access Token.
  * @param  {Object} opts.notifyStore    Notify Store instance being used.
  * @param  {Number} opts.maxAge         The lifetime of an access token.
@@ -13,18 +15,13 @@ const validateToken = require('../validate-token')
  *                                      a valid access token. Rejected
  *                                      otherwise.
  */
-module.exports = (token, { notifyStore, maxAge, origin }) => {
+module.exports = function (token, { notifyStore, maxAge, origin }) {
   const resolvedTokenPromise = (typeof token === 'string')
     ? retrieveToken(notifyStore, token)
     : Promise.resolve(token)
 
   return resolvedTokenPromise
-    .then(token => {
-      return validateToken(token, {
-        maxAge: maxAge,
-        origin: origin
-      })
-    })
+    .then(token => this.validateToken(token, { maxAge, origin }))
     .then(token => handleValidToken(notifyStore, token))
     .catch(token => handleInvalidToken(notifyStore, token))
 }
@@ -38,10 +35,9 @@ module.exports = (token, { notifyStore, maxAge, origin }) => {
  */
 function retrieveToken (notifyStore, token) {
   return notifyStore.store.find(notifyStore.types.TOKENS, undefined, {
-    match: {
-      token: token
-    }
-  }).then(({payload}) => {
+    match: { token }
+  })
+  .then(({payload}) => {
     if (payload.count === 0) return Promise.reject()
     return payload.records[0]
   })
@@ -67,5 +63,5 @@ function handleValidToken (notifyStore, token) {
  */
 function handleInvalidToken (notifyStore, token) {
   return notifyStore.store.delete(notifyStore.types.TOKENS, token.id)
-    .then(() => Promise.reject())
+    .then(() => Promise.reject('invalid token removed'))
 }

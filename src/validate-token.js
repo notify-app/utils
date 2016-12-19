@@ -1,13 +1,18 @@
 'use strict'
 
 /**
- * validateToken validates the specified access token.
- * @param  {Object} token        Access Token.
+ * validateToken checks whether the token object is valid. A token is considered
+ * to be valid if it meets the following criteria:
+ *   * Token is not expired (if max-age is provided).
+ *   * Token's origin is the same as the origin provided
+ *     (if origin is provided).
+ * @this   Utils
+ * @param  {Object} token        Token object.
  * @param  {Number} opts.maxAge  The lifetime of an access token.
  * @param  {String} opts.origin  The origin of the request.
  * @return {Promise}             Resolved if token is valid, rejected otherwise.
  */
-module.exports = (token, {maxAge, origin}) => {
+module.exports = function (token, {maxAge, origin}) {
   const validExpiry = validateExpiry(token, maxAge)
   const validOrigin = validateOrigin(token, origin)
 
