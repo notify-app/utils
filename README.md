@@ -27,7 +27,7 @@ As documented, if we try to retrieve the value of a non-existent cookie, it will
 ```javascript
 const cookieString = 'name=luca; surname=tabone; age=23'
 getCookieValue(cookieString, 'non-existent-cookie')
-  .catch(() => console.log('woops'))
+  .catch((err) => console.log(err)) // err.message === 'cookie not found'
 ```
 
 ## getTokenFromRequest(headers, opts) => Promise(tokenValue)

@@ -22,7 +22,7 @@ const qs = require('querystring')
  * @example
  * const cookieString = 'name=luca; surname=tabone; age=23'
  * getCookieValue(cookieString, 'non-existent-cookie')
- *   .catch(() => console.log('woops'))
+ *   .catch((err) => console.log(err)) // err.message === 'cookie not found'
  *
  * @this   Utils
  * @param  {String} cookieString String listing all the available cookies.
@@ -33,6 +33,6 @@ const qs = require('querystring')
 module.exports = function (cookieString, name) {
   const cookies = qs.parse(cookieString, '; ', '=')
   const token = cookies[name]
-  if (token === undefined) return Promise.reject('cookie not found')
+  if (token === undefined) return Promise.reject(new Error('cookie not found'))
   return Promise.resolve(token)
 }

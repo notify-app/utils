@@ -31,5 +31,5 @@ function parseHeader (headers, header) {
   const token = headers[header]
   return (token !== undefined)
     ? Promise.resolve(token)
-    : Promise.reject('token not found')
+    : Promise.reject(new Error('token not found'))
 }
