@@ -72,10 +72,12 @@
  *                                 of the provided Access Token.
  * @param  {Number} options.maxAge The `max-age` for the Access Token cookies.
  * @param  {String} options.origin The origin that the Access Token should have.
- * @return {Promise}               When the Access Token is valid it will return
- *                                 a resolved promise with the token object.
- *                                 Else it will return a rejected promise with
- *                                 the token object.
+ * @return {Promise}               When the Access Token is valid, it will
+ *                                 return a resolved promise with the token
+ *                                 object.
+ * @return {Promise}               When Access Token is not valid, it will
+ *                                 return a rejected promise with the token
+ *                                 object.
  */
 module.exports = function validateToken (token, { maxAge, origin }) {
   /**

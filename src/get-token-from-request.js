@@ -98,9 +98,11 @@
  * @param  {String} options.header Name of header used to store the Access
  *                                 Token.
  * @return {Promise}               When the Access Token is found either stored
- *                                 as a cookie or header it will return a
- *                                 resolved promise with the token value. Else
- *                                 it will return a rejected promise.
+ *                                 as a cookie or header, it will return a
+ *                                 resolved promise with the token value.
+ * @return {Promise}               When the Access Token is not found stored as
+ *                                 a cookie or header, it will return a rejected
+ *                                 promise.
  */
 module.exports = function getTokenFromRequest (headers, { cookie, header }) {
   return this.getCookieValue(headers.cookie, cookie)

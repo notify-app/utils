@@ -30,9 +30,11 @@ const qs = require('querystring')
  *                               the value of a cookie.
  * @param  {String} name         Name of the cookie.
  * @return {Promise}             When the cookie exist in the provided cookie
- *                               string it will return a resolved promise with
- *                               the value of the specified cookie. Else it will
- *                               return a rejected promise.
+ *                               string, it will return a resolved promise with
+ *                               the value of the specified cookie.
+ * @return {Promise}             When cookie does not exist in the provided
+ *                               cookie string, it will return a rejected
+ *                               promise.
  */
 module.exports = function getCookieValue (cookieString, name) {
   // Parse cookie string.
