@@ -4,7 +4,8 @@
   "description": "Utilities used by Notify",
   "main": "index.js",
   "scripts": {
-    "test": "standard && mocha"
+    "test": "standard && mocha",
+    "docs": "jsdoc ./ -c conf.json -r"
   },
   "author": "Luca Tabone <taboneluca3@gmail.com>",
   "license": "ISC",
@@ -14,6 +15,7 @@
     ]
   },
   "devDependencies": {
+    "jsdoc": "^3.4.3",
     "mocha": "^3.2.0",
     "sinon": "^1.17.6",
     "standard": "^8.6.0"

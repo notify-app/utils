@@ -1,0 +1,17 @@
+{
+  "plugins": ["plugins/markdown"],
+  "tags": {
+    "allowUnknownTags": false,
+    "dictionaries": [ "jsdoc" ]
+  },
+  "source": {
+    "includePatterns": ".+\\.js$",
+    "exclude": ["out/", "node_modules/"]
+  },
+  "opts": {
+    "recurse": true
+  },
+  "templates": {
+    "monospaceLinks": true
+  }
+}
