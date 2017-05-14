@@ -1,38 +1,50 @@
 'use strict'
 
+/**
+ * @module notify-utils/get-cookie-value
+ * @private
+ */
+
 const qs = require('querystring')
 
 /**
- * getCookieValue is used to return the value of a cookie in a given cookie
- * string. If the cookie specified does not exists in the provided cookie string
- * it will return a rejected promise.
- *
- * Lets assume we have the following cookie string: `name=luca; surname=tabone;
- * age=23`. We can use this function to retrieve the value of the `surname`
- * cookie as follows:
+ * Function used to retrieve the value of a cookie from a cookie string.
  *
  * @example
+ * const utils = require('notify-utils')
+ *
+ * // Cookie String
  * const cookieString = 'name=luca; surname=tabone; age=23'
- * getCookieValue(cookieString, 'surname')
- *   .then(cookieValue => console.log(cookieValue)) // cookieValue === 'tabone'
  *
- * As documented, if we try to retrieve the value of a non-existent cookie, it
- * will return a rejected promise.
+ * // Retrieve the value of an existing cookie.
+ * utils.getCookieString(cookieString, 'name').then(val => {
+ *   console.log(val) // prints 'luca'.
+ * })
  *
- * @example
- * const cookieString = 'name=luca; surname=tabone; age=23'
- * getCookieValue(cookieString, 'non-existent-cookie')
- *   .catch((err) => console.log(err)) // err.message === 'cookie not found'
+ * // Retrieve the value of a non-existing cookie.
+ * utils.getCookieString(cookieString, 'non-existing').catch(err => {
+ *   console.log(err) // prints error.
+ * })
  *
- * @this   Utils
- * @param  {String} cookieString String listing all the available cookies.
- * @param  {String} name         The name of the cookie.
- * @return {Promise}             Resolved with the value of the cookie. Rejected
- *                               if specified cookie is not found.
+ * @param  {String} cookieString Cookie string that will be parsed to retrieve
+ *                               the value of a cookie.
+ * @param  {String} name         Name of the cookie.
+ * @return {Promise}             When the cookie exist in the provided cookie
+ *                               string it will return a resolved promise with
+ *                               the value of the specified cookie. Else it will
+ *                               return a rejected promise.
  */
-module.exports = function (cookieString, name) {
+module.exports = function getCookieValue (cookieString, name) {
+  // Parse cookie string.
   const cookies = qs.parse(cookieString, '; ', '=')
-  const token = cookies[name]
-  if (token === undefined) return Promise.reject(new Error('cookie not found'))
-  return Promise.resolve(token)
+
+  // Retrieve value of specified cookie.
+  const value = cookies[name]
+
+  // If specified cookie does not exist, return a rejected promise.
+  if (value === undefined) return Promise.reject(new Error('cookie not found'))
+
+  // If specified cookie exist, return a resolved promise with the value of the
+  // specified cookie.
+  return Promise.resolve(value)
 }
