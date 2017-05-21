@@ -59,10 +59,14 @@ describe('utils.getCookieValue() method:', function () {
       })
 
       describe('when trying to retrieve the value of a non-existent cookie:', function () {
-        it('should return a rejected promise', function (done) {
+        it('should return a rejected promise with an error', function (done) {
           utils.getCookieValue(cookieString, 'surname')
             .then(() => done('Expected a rejected promise'))
-            .catch(() => done())
+            .catch(err => {
+              assert.strictEqual(err instanceof Error, true)
+              assert.strictEqual(err.message, 'cookie not found')
+              done()
+            }).catch(done)
         })
       })
     })

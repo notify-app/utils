@@ -108,12 +108,15 @@ describe('utils.getTokenFromRequest() method:', function () {
 
       describe('with no token,', function () {
         describe('when trying to retrieve the token from the request:', function () {
-          it('should return a rejected promise', function (done) {
+          it('should return a rejected promise with an error', function (done) {
             utils.getTokenFromRequest(req.headers, {
               cookie: 'token',
               header: 'token'
-            }).then(() => done('Expected a rejected promise'))
-              .catch(() => done())
+            }).then(() => done('Expected a rejected promise')).catch(err => {
+              assert.strictEqual(err instanceof Error, true)
+              assert.strictEqual(err.message, 'token not found')
+              done()
+            }).catch(done)
           })
         })
       })
