@@ -54,7 +54,7 @@
  * @example
  * <caption>
  *   Retrieving Access Token from a HTTP Request that has a token stored as a
- *   cookie & header.
+ *   cookie & header
  * </caption>
  * const utils = require('notify-utils')
  *
@@ -93,7 +93,7 @@
  * @param  {Object} headers        Headers of an HTTP Request.
  * @param  {Object} options        Contains the name of the cookie & header
  *                                 which the Access Token is stored in.
- * @param  {String} options.name   Name of the cookie used to store the Access
+ * @param  {String} options.cookie Name of the cookie used to store the Access
  *                                 Token.
  * @param  {String} options.header Name of header used to store the Access
  *                                 Token.
@@ -102,7 +102,7 @@
  *                                 resolved promise with the token value.
  * @return {Promise}               When the Access Token is not found stored as
  *                                 a cookie or header, it will return a rejected
- *                                 promise.
+ *                                 promise with an error.
  */
 module.exports = function getTokenFromRequest (headers, { cookie, header }) {
   return this.getCookieValue(headers.cookie, cookie)
