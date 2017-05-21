@@ -47,14 +47,19 @@ describe('utils.validateToken() method:', function () {
         beforeEach(function () {
           maxAge = 3600 // 1 hour
           token.created = new Date()
-          token.created.setHours(token.created.getHours() + 2)
+          token.created.setHours(token.created.getHours() - 1)
           token.origin = origin = 'http://bar.com'
         })
 
         describe('when validating the token:', function () {
-          it('should return a rejected promise with the token', function () {
-            return utils.validateToken(token, { maxAge, origin })
-              .catch(resToken => assert.strictEqual(resToken, token))
+          it('should return a rejected promise with an error', function (done) {
+            utils.validateToken(token, { maxAge, origin })
+              .then(() => done('Expected a rejected promise'))
+              .catch(err => {
+                assert.strictEqual(err instanceof Error, true)
+                assert.strictEqual(err.message, 'invalid token')
+                done()
+              }).catch(done)
           })
         })
       })
@@ -70,20 +75,26 @@ describe('utils.validateToken() method:', function () {
       })
 
       describe('which has a different origin from the HTTP Request origin,', function () {
-        let requestOrigin = null
+        let origin = null
         let maxAge = null
 
         beforeEach(function () {
           maxAge = 3600 // 1 hour
+          origin = 'http://foo.com'
+
           token.created = new Date()
           token.origin = 'http://bar.com'
-          requestOrigin = 'http://foo.com'
         })
 
         describe('when validating the token:', function () {
-          it('should return a rejected promise with the token', function () {
-            return utils.validateToken(token, { maxAge, requestOrigin })
-              .catch(resToken => assert.strictEqual(resToken, token))
+          it('should return a rejected promise with an error', function (done) {
+            utils.validateToken(token, { maxAge, origin })
+              .then(() => done('Expected a rejected promise'))
+              .catch(err => {
+                assert.strictEqual(err instanceof Error, true)
+                assert.strictEqual(err.message, 'invalid token')
+                done()
+              }).catch(done)
           })
         })
       })

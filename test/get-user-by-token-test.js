@@ -18,13 +18,13 @@ describe('utils.getUserByToken() method:', function () {
   let token = null
 
   /**
-   * maxAge.
+   * maxAge is the 'max-age' used in Access Token cookies.
    * @type {Number}
    */
   let maxAge = null
 
   /**
-   * origin.
+   * origin of the Access Token.
    * @type {String}
    */
   let origin = null
@@ -37,37 +37,34 @@ describe('utils.getUserByToken() method:', function () {
 
   beforeEach(function () {
     user = { id: 'a0' }
-    token = { id: '1', user: 'a0' }
+    token = { id: '1', user: user.id }
     maxAge = 3600 // 1 hour
     origin = 'http://foo.com'
 
     notifyStore = {
       types: {
-        TOKENS: 'tokens',
-        USERS: 'users'
+        USERS: 'users',
+        TOKENS: 'tokens'
       },
       store: {
-        find: null,
-        delete: sinon.stub()
+        find: sinon.stub(),
+        delete: sinon.stub().resolves()
       }
     }
 
-    // The 'find' function can be used to either return a user or a token.
-    notifyStore.store.find = (type, id, opts) => {
+    notifyStore.store.find.callsFake(type => {
       const resp = {
         payload: {
+          count: 1,
           records: null
         }
       }
 
-      if (type === notifyStore.types.TOKENS) resp.payload.records = [token]
-      if (type === notifyStore.types.USERS) resp.payload.records = [user]
+      if (type === notifyStore.types.USERS) resp.payload.records = [ user ]
+      if (type === notifyStore.types.TOKENS) resp.payload.records = [ token ]
 
       return Promise.resolve(resp)
-    }
-
-    sinon.spy(notifyStore.store, 'find')
-    notifyStore.store.delete.returns(Promise.resolve())
+    })
   })
 
   describe('Scenario: Retrieving the user by token value (i.e. string):', function () {
@@ -80,8 +77,7 @@ describe('utils.getUserByToken() method:', function () {
 
       describe('which is considered to be valid,', function () {
         beforeEach(function () {
-          sinon.stub(utils, 'validateToken')
-            .returns(Promise.resolve(token))
+          sinon.stub(utils, 'validateToken').resolves(token)
         })
 
         afterEach(function () {
@@ -89,48 +85,49 @@ describe('utils.getUserByToken() method:', function () {
         })
 
         describe('when retrieving the user which the token belongs to:', function () {
+          let respUser = null
+
+          beforeEach(function () {
+            return utils.getUserByToken(tokenValue, notifyStore, {
+              maxAge, origin
+            }).then(resp => { respUser = resp })
+          })
+
+          it('should query the db twice (user & token)', function () {
+            assert.strictEqual(notifyStore.store.find.callCount, 2)
+          })
+
           it('should retrieve the token object', function () {
-            return utils.getUserByToken(tokenValue, {
-              notifyStore, maxAge, origin
-            })
-            .then(() => {
-              assert.strictEqual(
-                notifyStore.store.find.getCall(0).args[0],
-                notifyStore.types.TOKENS)
+            assert.strictEqual(
+              notifyStore.store.find.getCall(0).args[0],
+              notifyStore.types.TOKENS)
 
-              assert.strictEqual(
-                notifyStore.store.find.getCall(0).args[1],
-                undefined)
+            assert.strictEqual(
+              notifyStore.store.find.getCall(0).args[1],
+              undefined)
 
-              assert.deepStrictEqual(
-                notifyStore.store.find.getCall(0).args[2],
-                { match: { token: tokenValue } })
-            })
+            assert.deepStrictEqual(
+              notifyStore.store.find.getCall(0).args[2],
+              { match: { token: tokenValue } })
           })
 
           it('should retrieve the user', function () {
-            return utils.getUserByToken(tokenValue, {
-              notifyStore, maxAge, origin
-            })
-            .then(({payload}) => {
-              assert.strictEqual(
-                notifyStore.store.find.getCall(1).args[0],
-                notifyStore.types.USERS)
+            assert.strictEqual(
+              notifyStore.store.find.getCall(1).args[0],
+              notifyStore.types.USERS)
 
-              assert.strictEqual(
-                notifyStore.store.find.getCall(1).args[1],
-                token.user)
+            assert.strictEqual(
+              notifyStore.store.find.getCall(1).args[1],
+              token.user)
 
-              assert.strictEqual(payload.records[0], user)
-            })
+            assert.strictEqual(user, respUser)
           })
         })
       })
 
       describe('which is considered to be invalid,', function () {
         beforeEach(function () {
-          sinon.stub(utils, 'validateToken')
-            .returns(Promise.reject(token))
+          sinon.stub(utils, 'validateToken').rejects(new Error('invalid token'))
         })
 
         afterEach(function () {
@@ -138,11 +135,19 @@ describe('utils.getUserByToken() method:', function () {
         })
 
         describe('when retrieving the user which the token belongs to:', function () {
+          it('should query the db once (token)', function (done) {
+            utils.getUserByToken(tokenValue, notifyStore, {
+              maxAge, origin
+            }).then(() => done('Expected a rejected promise')).catch(() => {
+              assert.strictEqual(notifyStore.store.find.callCount, 1)
+              done()
+            }).catch(done)
+          })
+
           it('should retrieve the token object', function (done) {
-            utils.getUserByToken(tokenValue, {
-              notifyStore, maxAge, origin
-            })
-            .catch(() => {
+            utils.getUserByToken(tokenValue, notifyStore, {
+              maxAge, origin
+            }).then(() => done('Expected a rejected promise')).catch(() => {
               assert.strictEqual(
                 notifyStore.store.find.getCall(0).args[0],
                 notifyStore.types.TOKENS)
@@ -156,14 +161,13 @@ describe('utils.getUserByToken() method:', function () {
                 { match: { token: tokenValue } })
 
               done()
-            })
+            }).catch(done)
           })
 
           it('should delete the token from db', function (done) {
-            utils.getUserByToken(tokenValue, {
-              notifyStore, maxAge, origin
-            })
-            .catch(() => {
+            utils.getUserByToken(tokenValue, notifyStore, {
+              maxAge, origin
+            }).then(() => done('Expected a rejected promise')).catch(() => {
               assert.strictEqual(notifyStore.store.delete.callCount, 1)
 
               assert.strictEqual(
@@ -175,14 +179,16 @@ describe('utils.getUserByToken() method:', function () {
                 token.id)
 
               done()
-            })
+            }).catch(done)
           })
 
-          it('should return a rejected promise', function (done) {
-            utils.getUserByToken(tokenValue, {
-              notifyStore, maxAge, origin
-            })
-            .catch(() => done())
+          it('should return a rejected promise with an error', function (done) {
+            utils.getUserByToken(tokenValue, notifyStore, { maxAge, origin })
+              .then(() => done('Expected a rejected promise')).catch(err => {
+                assert.strictEqual(err instanceof Error, true)
+                assert.strictEqual(err.message, 'invalid token removed')
+                done()
+              }).catch(done)
           })
         })
       })
@@ -193,8 +199,7 @@ describe('utils.getUserByToken() method:', function () {
     describe('Given a token object,', function () {
       describe('which is considered to be valid,', function () {
         beforeEach(function () {
-          sinon.stub(utils, 'validateToken')
-            .returns(Promise.resolve(token))
+          sinon.stub(utils, 'validateToken').resolves(token)
         })
 
         afterEach(function () {
@@ -202,42 +207,32 @@ describe('utils.getUserByToken() method:', function () {
         })
 
         describe('when retrieving the user which the token belongs to:', function () {
-          it('should not retrieve the token object', function () {
-            return utils.getUserByToken(token, {
-              notifyStore, maxAge, origin
-            })
-            .then(() => {
-              assert.strictEqual(
-                notifyStore.store.find.getCall(0).args[0],
-                notifyStore.types.USERS)
+          let respUser = null
 
-              assert.strictEqual(notifyStore.store.find.callCount, 1)
-            })
+          beforeEach(function () {
+            return utils.getUserByToken(token, notifyStore, { maxAge, origin })
+              .then(resp => { respUser = resp })
           })
 
-          it('should retrieve the user', function () {
-            return utils.getUserByToken(token, {
-              notifyStore, maxAge, origin
-            })
-            .then(({payload}) => {
-              assert.strictEqual(
-                notifyStore.store.find.getCall(0).args[0],
-                notifyStore.types.USERS)
+          it('should only query the db for the user', function () {
+            assert.strictEqual(notifyStore.store.find.callCount, 1)
 
-              assert.strictEqual(
-                notifyStore.store.find.getCall(0).args[1],
-                token.user)
+            assert.strictEqual(
+              notifyStore.store.find.getCall(0).args[0],
+              notifyStore.types.USERS)
 
-              assert.strictEqual(payload.records[0], user)
-            })
+            assert.strictEqual(
+              notifyStore.store.find.getCall(0).args[1],
+              token.user)
+
+            assert.strictEqual(respUser, user)
           })
         })
       })
 
       describe('which is considered to be invalid,', function () {
         beforeEach(function () {
-          sinon.stub(utils, 'validateToken')
-            .returns(Promise.reject(token))
+          sinon.stub(utils, 'validateToken').rejects(token)
         })
 
         afterEach(function () {
@@ -245,40 +240,38 @@ describe('utils.getUserByToken() method:', function () {
         })
 
         describe('when retrieving the user which the token belongs to:', function () {
-          it('should not retrieve the token object', function (done) {
-            utils.getUserByToken(token, {
-              notifyStore, maxAge, origin
-            })
-            .catch(() => {
-              assert.strictEqual(notifyStore.store.find.callCount, 0)
-              done()
-            })
+          it('should not query the db', function (done) {
+            utils.getUserByToken(token, notifyStore, { maxAge, origin })
+              .then(() => done('Expected a rejected promise')).catch(() => {
+                assert.strictEqual(notifyStore.store.find.callCount, 0)
+                done()
+              }).catch(done)
           })
 
           it('should delete the token from db', function (done) {
-            utils.getUserByToken(token, {
-              notifyStore, maxAge, origin
-            })
-            .catch(() => {
-              assert.strictEqual(notifyStore.store.delete.callCount, 1)
+            utils.getUserByToken(token, notifyStore, { maxAge, origin })
+              .then(() => done('Expected a rejected promise')).catch(() => {
+                assert.strictEqual(notifyStore.store.delete.callCount, 1)
 
-              assert.strictEqual(
-                notifyStore.store.delete.getCall(0).args[0],
-                notifyStore.types.TOKENS)
+                assert.strictEqual(
+                  notifyStore.store.delete.getCall(0).args[0],
+                  notifyStore.types.TOKENS)
 
-              assert.strictEqual(
-                notifyStore.store.delete.getCall(0).args[1],
-                token.id)
+                assert.strictEqual(
+                  notifyStore.store.delete.getCall(0).args[1],
+                  token.id)
 
-              done()
-            })
+                done()
+              }).catch(done)
           })
 
           it('should return a rejected promise', function (done) {
-            utils.getUserByToken(token, {
-              notifyStore, maxAge, origin
-            })
-            .catch(() => done())
+            utils.getUserByToken(token, notifyStore, { maxAge, origin })
+              .then(() => done('Expected a rejected promise')).catch(err => {
+                assert.strictEqual(err instanceof Error, true)
+                assert.strictEqual(err.message, 'invalid token removed')
+                done()
+              }).catch(done)
           })
         })
       })
