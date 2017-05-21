@@ -43,8 +43,8 @@
  * const expectedOrigin = 'http://bar.io'
  *
  * // When validating the token object it should return a rejected promise.
- * utils.validateToken(token, { origin: expectedOrigin }).catch(token => {
- *   console.log(token) // prints token.
+ * utils.validateToken(token, { origin: expectedOrigin }).catch(err => {
+ *   console.log(err) // prints error.
  * })
  *
  * @example
@@ -63,8 +63,8 @@
  * const todaysDate = new Date(2017, 0, 1, 14, 30)
  *
  * // When validating the token object it should return a rejected promise.
- * utils.validateToken(token, { maxAge: cookieMaxAge }).catch(token => {
- *   console.log(token) // prints token.
+ * utils.validateToken(token, { maxAge: cookieMaxAge }).catch(err => {
+ *   console.log(err) // prints error.
  * })
  *
  * @param  {Object} token          Access Token to be validated.
@@ -76,8 +76,7 @@
  *                                 return a resolved promise with the token
  *                                 object.
  * @return {Promise}               When Access Token is not valid, it will
- *                                 return a rejected promise with the token
- *                                 object.
+ *                                 return a rejected promise with an error.
  */
 module.exports = function validateToken (token, { maxAge, origin }) {
   /**
@@ -97,7 +96,7 @@ module.exports = function validateToken (token, { maxAge, origin }) {
   // else return a rejected promise with the token object.
   return (validExpiry && validOrigin)
     ? Promise.resolve(token)
-    : Promise.reject(token)
+    : Promise.reject(new Error('invalid token'))
 }
 
 /**

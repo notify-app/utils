@@ -52,13 +52,14 @@ describe('utils.validateToken() method:', function () {
         })
 
         describe('when validating the token:', function () {
-          it('should return a rejected promise with the token', function (done) {
+          it('should return a rejected promise with an error', function (done) {
             utils.validateToken(token, { maxAge, origin })
               .then(() => done('Expected a rejected promise'))
-              .catch(resToken => {
-                assert.strictEqual(resToken, token)
+              .catch(err => {
+                assert.strictEqual(err instanceof Error, true)
+                assert.strictEqual(err.message, 'invalid token')
                 done()
-              })
+              }).catch(done)
           })
         })
       })
@@ -86,13 +87,14 @@ describe('utils.validateToken() method:', function () {
         })
 
         describe('when validating the token:', function () {
-          it('should return a rejected promise with the token', function (done) {
+          it('should return a rejected promise with an error', function (done) {
             utils.validateToken(token, { maxAge, origin })
               .then(() => done('Expected a rejected promise'))
-              .catch(resToken => {
-                assert.strictEqual(resToken, token)
+              .catch(err => {
+                assert.strictEqual(err instanceof Error, true)
+                assert.strictEqual(err.message, 'invalid token')
                 done()
-              })
+              }).catch(done)
           })
         })
       })
