@@ -17,7 +17,7 @@
   "devDependencies": {
     "jsdoc": "^3.4.3",
     "mocha": "^3.2.0",
-    "sinon": "^1.17.6",
+    "sinon": "^2.2.0",
     "standard": "^8.6.0"
   }
 }
